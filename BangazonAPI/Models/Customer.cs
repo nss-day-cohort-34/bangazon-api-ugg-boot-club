@@ -17,6 +17,7 @@ namespace BangazonAPI.Models
         public DateTime CreationDate { get; set; }
         [Required]
         public DateTime LastActiveDate { get; set; }
+        public List<Product> Products { get; set; } = new List<Product>();
 
     }
 }

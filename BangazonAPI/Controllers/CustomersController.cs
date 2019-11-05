@@ -32,34 +32,73 @@ namespace BangazonAPI.Controllers
 
         // GET api/customers
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get(string _include, string q)
         {
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = "SELECT Id, FirstName, LastName, CreationDate, LastActiveDate FROM Customer";
+                    //cmd.CommandText = @"SELECT Id, FirstName, LastName, CreationDate, LastActiveDate 
+                    //                    FROM Customer";
+
+                    cmd.CommandText = @"SELECT c.Id, c.FirstName, c.LastName, c.CreationDate, 
+                                                c.LastActiveDate, p.Id AS ProductId, p.ProductTypeId, p.Price, p.Title, p.Description, p.Quantity
+                                            FROM Customer c INNER JOIN Product p ON p.CustomerId = c.Id";
+
+                    if (_include?.ToLower() == "products")
+                    {
+                        cmd.CommandText = @"SELECT c.Id, c.FirstName, c.LastName, c.CreationDate, 
+                                                c.LastActiveDate, p.Id AS ProductId, p.ProductTypeId, p.Price, p.Title, p.Description, p.Quantity
+                                            FROM Customer c INNER JOIN Product p ON p.CustomerId = c.Id";
+                                  
+                    }
+                    //else if (_include?.ToLower() == "payments")
+                    //{
+                    //    cmd.CommandText = @"SELECT c.Id, c.FirstName, c.LastName, c.CreationDate, 
+                    //                            c.LastActiveDate, p.Id AS PaymentId, p.AcctNumber, p.Name
+                    //                        FROM Customer c INNER JOIN PaymentType p ON p.CustomerId = c.Id";
+                    //}
+
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
-                    List<Customer> customers = new List<Customer>();
+                    Dictionary<int, Customer> customers = new Dictionary<int, Customer>();
                     while (reader.Read())
                     {
-                        Customer customer = new Customer
-                        {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                            FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
-                            LastName = reader.GetString(reader.GetOrdinal("LastName")),
-                            CreationDate = reader.GetDateTime(reader.GetOrdinal("CreationDate")),
-                            LastActiveDate = reader.GetDateTime(reader.GetOrdinal("LastActiveDate"))
-                        };
+                        int customerId = reader.GetInt32(reader.GetOrdinal("Id"));
+                        if (!customers.ContainsKey(customerId))
+                        { 
+                            Customer customer = new Customer
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                                CreationDate = reader.GetDateTime(reader.GetOrdinal("CreationDate")),
+                                LastActiveDate = reader.GetDateTime(reader.GetOrdinal("LastActiveDate"))
+                            };
 
-                        customers.Add(customer);
+                            customers.Add(customerId, customer);
+                        }
+                    Customer fromDictionary = customers[customerId];
+                        
+                        if (!reader.IsDBNull(reader.GetOrdinal("ProductId")))
+                        {
+                            Product aProduct = new Product()
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                ProductTypeId = reader.GetInt32(reader.GetOrdinal("ProductTypeId")),
+                                Price = reader.GetDecimal(reader.GetOrdinal("Price")),
+                                Title = reader.GetString(reader.GetOrdinal("Title")),
+                                Description = reader.GetString(reader.GetOrdinal("Description")),
+                                Quantity = reader.GetInt32(reader.GetOrdinal("Quantity"))
+                            };
+                            fromDictionary.Products.Add(aProduct);
+                        }
                     }
 
                     reader.Close();
 
-                    return Ok(customers);
+                    return Ok(customers.Values);
                 }
             }
         }
