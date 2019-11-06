@@ -29,17 +29,32 @@ namespace BangazonAPI.Controllers
             }
         }
         // GET: api/Orders
-        [HttpGet]
-        public async Task<IActionResult> Get()
+        
+        // 1. When an order is deleted, every line item(i.e.entry in OrderProduct) should be removed
+        // 2. Should be able to filter out completed orders with the ?completed=false query string parameter.If the parameter value is true, then only completed order should be returned.
+        // 3. If the query string parameter of? _include = products is in the URL, then the list of products in the order should be returned.
+        // 4. If the query string parameter of? _include = customers is in the URL, then the customer representation should be included in the response.
+
+      [HttpGet]
+        public async Task<IActionResult> Get(string completed)
         {
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = "SELECT o.Id AS OrderId, o.CustomerId, o.PaymentTypeId, o.Status FROM [Order] o";
-                    SqlDataReader reader = await cmd.ExecuteReaderAsync();
+                    cmd.CommandText = "SELECT o.Id AS OrderId, o.CustomerId, o.PaymentTypeId, o.Status FROM [Order] o ";
+                    if (completed?.ToLower() == "true")
+                    {
+                        cmd.CommandText += "WHERE Status LIKE '%omplete%'";
+                    }
+                    else if (completed?.ToLower() == "false")
+                    {
+                        cmd.CommandText += "WHERE Status NOT LIKE '%omplete%'";
+                    }
 
+                    
+                    SqlDataReader reader = await cmd.ExecuteReaderAsync();
                     List<Order> orders = new List<Order>();
                     while (reader.Read())
                     {
@@ -53,6 +68,7 @@ namespace BangazonAPI.Controllers
 
                         orders.Add(order);
                     }
+
 
                     reader.Close();
 
