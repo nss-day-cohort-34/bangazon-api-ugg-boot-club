@@ -128,7 +128,7 @@ namespace BangazonAPI.Controllers
                         VALUES (@acctNumber, @name, @customerId)
                     ";
                     cmd.Parameters.Add(new SqlParameter("@acctNumber", paymentType.AcctNumber));
-                    cmd.Parameters.Add(new SqlParameter("@lastName", paymentType.Name));
+                    cmd.Parameters.Add(new SqlParameter("@name", paymentType.Name));
                     cmd.Parameters.Add(new SqlParameter("@customerId", paymentType.CustomerId));
        
                     paymentType.Id = (int)await cmd.ExecuteScalarAsync();
