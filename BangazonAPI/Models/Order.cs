@@ -18,7 +18,7 @@ namespace BangazonAPI.Models
         {
             get
             {
-                if (Status.ToLower().Contains("omplete"))
+                if (Status.ToLower() == "complete")
                 {
                     return true;
                 }
