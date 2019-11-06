@@ -156,7 +156,7 @@ namespace BangazonAPI.Controllers
             }
             catch (Exception)
             {
-                if (!OrderExists(id))
+                if (!OrderExists(id) || !OrderProductExists(id))
                 {
                     return NotFound();
                 }
@@ -177,7 +177,9 @@ namespace BangazonAPI.Controllers
                     conn.Open();
                     using (SqlCommand cmd = conn.CreateCommand())
                     {
-                        cmd.CommandText = @"DELETE FROM [Order] WHERE Id = @id";
+                        //add the following line to command text when it's time to implement DELETE on associated OrderProducts
+                        cmd.CommandText = @"
+                            DELETE FROM [Order] WHERE Id = @id";
                         cmd.Parameters.Add(new SqlParameter("@id", id));
 
                         int rowsAffected = cmd.ExecuteNonQuery();
@@ -188,6 +190,9 @@ namespace BangazonAPI.Controllers
                         throw new Exception("No rows affected");
                     }
                 }
+
+                // Call helper method here to delete from OrderProducts table
+                //DeleteAssociatedOrderProduct(id);
             }
             catch (Exception)
             {
@@ -202,6 +207,41 @@ namespace BangazonAPI.Controllers
             }
         }
 
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> DeleteAssociatedOrderProduct(int id)
+        //{
+        //    try
+        //    {
+        //        using (SqlConnection conn = Connection)
+        //        {
+        //            conn.Open();
+        //            using (SqlCommand cmd = conn.CreateCommand())
+        //            {
+        //                cmd.CommandText = @"DELETE FROM OrderProduct op WHERE op.OrderId = @id";
+        //                cmd.Parameters.Add(new SqlParameter("@id", id));
+
+        //                int rowsAffected = cmd.ExecuteNonQuery();
+        //                if (rowsAffected > 0)
+        //                {
+        //                    return new StatusCodeResult(StatusCodes.Status204NoContent);
+        //                }
+        //                throw new Exception("No rows affected");
+        //            }
+        //        }
+        //    }
+        //    catch (Exception)
+        //    {
+        //        if (!OrderProductExists(id))
+        //        {
+        //            return NotFound();
+        //        }
+        //        else
+        //        {
+        //            throw;
+        //        }
+        //    }
+        //}
+
         private bool OrderExists(int id)
         {
             using (SqlConnection conn = Connection)
@@ -210,6 +250,22 @@ namespace BangazonAPI.Controllers
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = "SELECT Id FROM [Order] WHERE Id = @id";
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    return reader.Read();
+                }
+            }
+        }
+        private bool OrderProductExists(int id)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = "SELECT Id FROM OrderProduct WHERE Id = @id";
                     cmd.Parameters.Add(new SqlParameter("@id", id));
 
                     SqlDataReader reader = cmd.ExecuteReader();
