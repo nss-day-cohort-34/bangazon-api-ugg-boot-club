@@ -143,7 +143,8 @@ namespace BangazonAPI.Controllers
                                                 Price = @Price,
                                                 Title = @Title,
                                                 Description = @Description,
-                                                Quantity = @Quantity
+                                                Quantity = @Quantity,
+                                                isDeleted = @isDeleted
                                             WHERE Id = @id";
                         cmd.Parameters.Add(new SqlParameter("@ProductTypeId", product.ProductTypeId));
                         cmd.Parameters.Add(new SqlParameter("@CustomerId", product.CustomerId));
@@ -151,6 +152,7 @@ namespace BangazonAPI.Controllers
                         cmd.Parameters.Add(new SqlParameter("@Title", product.Title));
                         cmd.Parameters.Add(new SqlParameter("@Description", product.Description));
                         cmd.Parameters.Add(new SqlParameter("@Quantity", product.Quantity));
+                        cmd.Parameters.Add(new SqlParameter("@isDeleted", product.isDeleted));
                         cmd.Parameters.Add(new SqlParameter("@Id", id));
 
                         int rowsAffected = await cmd.ExecuteNonQueryAsync();
@@ -175,40 +177,42 @@ namespace BangazonAPI.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete([FromRoute] int id)
-        {
-            try
-            {
-                using (SqlConnection conn = Connection)
-                {
-                    conn.Open();
-                    using (SqlCommand cmd = conn.CreateCommand())
-                    {
-                        cmd.CommandText = @"DELETE FROM Product WHERE Id = @id";
-                        cmd.Parameters.Add(new SqlParameter("@id", id));
+        
 
-                        int rowsAffected = cmd.ExecuteNonQuery();
-                        if (rowsAffected > 0)
-                        {
-                            return new StatusCodeResult(StatusCodes.Status204NoContent);
-                        }
-                        throw new Exception("No rows affected");
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                if (!ProductExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-        }
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> Delete([FromRoute] int id)
+        //{
+        //    try
+        //    {
+        //        using (SqlConnection conn = Connection)
+        //        {
+        //            conn.Open();
+        //            using (SqlCommand cmd = conn.CreateCommand())
+        //            {
+        //                cmd.CommandText = @"UPDATE Product FROM Product WHERE Id = @id";
+        //                cmd.Parameters.Add(new SqlParameter("@id", id));
+
+        //                int rowsAffected = cmd.ExecuteNonQuery();
+        //                if (rowsAffected > 0)
+        //                {
+        //                    return new StatusCodeResult(StatusCodes.Status204NoContent);
+        //                }
+        //                throw new Exception("No rows affected");
+        //            }
+        //        }
+        //    }
+        //    catch (Exception)
+        //    {
+        //        if (!ProductExists(id))
+        //        {
+        //            return NotFound();
+        //        }
+        //        else
+        //        {
+        //            throw;
+        //        }
+        //    }
+        //}
 
         private bool ProductExists(int id)
         {
