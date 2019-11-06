@@ -1,4 +1,8 @@
-﻿INSERT INTO Department (Name, Budget) VALUES ('Accounting', 10000);
+﻿ALTER TABLE Employee ADD StartDate datetime, EndDate datetime;
+ALTER TABLE [Order] ADD Status varchar(55);
+ALTER TABLE Computer ADD CurrentEmployeeId int, CONSTRAINT Fk_Computer_Employee FOREIGN KEY(CurrentEmployeeId) REFERENCES Employee(Id);
+
+INSERT INTO Department (Name, Budget) VALUES ('Accounting', 10000);
 INSERT INTO Department (Name, Budget) VALUES ('Human Resources', 2000);
 INSERT INTO Department (Name, Budget) VALUES ('IT', 5000);
 INSERT INTO Department (Name, Budget) VALUES ('Management', 80000);
