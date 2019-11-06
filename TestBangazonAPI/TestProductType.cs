@@ -156,5 +156,64 @@ namespace TestBangazonAPI
                 Assert.Equal(newName, newToys.Name);
             }
         }
+        [Fact]
+        public async Task Test_Delete_ProductType()
+        {
+
+            using (var client = new APIClientProvider().Client)
+            {
+                /*
+                    ARRANGE
+                */
+                ProductType toys = new ProductType
+                {
+                    Id = -1,
+                    Name = "Toys"
+                };
+
+                // Serialize the C# object into a JSON string
+                var toysAsJSON = JsonConvert.SerializeObject(toys);
+
+
+                /*
+                    ACT
+                */
+                //Insert object
+                var response = await client.PostAsync(
+                    "/api/ProductType",
+                    new StringContent(toysAsJSON, Encoding.UTF8, "application/json")
+                );
+                string responseBody = await response.Content.ReadAsStringAsync();
+
+                var newToys = JsonConvert.DeserializeObject<ProductType>(responseBody);
+                
+                //Get object
+                var getFood = await client.GetAsync("/api/productType/-1" +
+                    "");
+                getFood.EnsureSuccessStatusCode();
+
+                string getFoodBody = await getFood.Content.ReadAsStringAsync();
+                ProductType newFood = JsonConvert.DeserializeObject<ProductType>(getFoodBody);
+
+                //Delete Object
+                var deleteFood = await client.DeleteAsync("/api/productType/-1" +
+                    "");
+                getFood.EnsureSuccessStatusCode();
+                //Try to Get Object Again
+                var attemptGetFood = await client.GetAsync("/api/productType/-1" +
+                    "");
+                attemptGetFood.EnsureSuccessStatusCode();
+
+                string attemptGetFoodBody = await getFood.Content.ReadAsStringAsync();
+                ProductType newAttemptFood = JsonConvert.DeserializeObject<ProductType>(attemptGetFoodBody);
+
+
+                /*
+                    ASSERT
+                */
+                Assert.Equal(HttpStatusCode.NoContent, attemptGetFood.StatusCode);
+
+            }
+        }
     }
 }
