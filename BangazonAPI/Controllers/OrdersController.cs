@@ -28,17 +28,14 @@ namespace BangazonAPI.Controllers
                 return new SqlConnection(_config.GetConnectionString("DefaultConnection"));
             }
         }
-        // GET: api/Orders
         
         // 1. When an order is deleted, every line item(i.e.entry in OrderProduct) should be removed
-            // ***DO SOFT DELETE*** :
-                   // a. ADD a 'isDeleted' Column to both Order and OrderProduct Tables
+            // ***IIMPLEMENT SOFT DELETE*** :
+                   // a. ADD a 'isDeleted' Column to both Order and OrderProduct Tables ***add "ALTER TABLE..." queries to main seedData script???
                    // b. toggle the value of from false to true in both TBLs whenever and Order is DELETED
                    // c. re-factor ALL queries such that "deleted" entries are omitted from response(s)
-        
-        // 3. If the query string parameter of? _include = products is in the URL, then the list of products in the order should be returned.
-        // 4. If the query string parameter of? _include = customers is in the URL, then the customer representation should be included in the response.
 
+      // GET: api/Orders
       [HttpGet]
         public async Task<IActionResult> Get(string completed, string _include)
         {
@@ -395,9 +392,6 @@ namespace BangazonAPI.Controllers
                         throw new Exception("No rows affected");
                     }
                 }
-
-                // Call helper method here to delete from OrderProducts table
-                //DeleteAssociatedOrderProduct(id);
             }
             catch (Exception)
             {
@@ -411,41 +405,6 @@ namespace BangazonAPI.Controllers
                 }
             }
         }
-
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> DeleteAssociatedOrderProduct(int id)
-        //{
-        //    try
-        //    {
-        //        using (SqlConnection conn = Connection)
-        //        {
-        //            conn.Open();
-        //            using (SqlCommand cmd = conn.CreateCommand())
-        //            {
-        //                cmd.CommandText = @"DELETE FROM OrderProduct op WHERE op.OrderId = @id";
-        //                cmd.Parameters.Add(new SqlParameter("@id", id));
-
-        //                int rowsAffected = cmd.ExecuteNonQuery();
-        //                if (rowsAffected > 0)
-        //                {
-        //                    return new StatusCodeResult(StatusCodes.Status204NoContent);
-        //                }
-        //                throw new Exception("No rows affected");
-        //            }
-        //        }
-        //    }
-        //    catch (Exception)
-        //    {
-        //        if (!OrderProductExists(id))
-        //        {
-        //            return NotFound();
-        //        }
-        //        else
-        //        {
-        //            throw;
-        //        }
-        //    }
-        //}
 
         private bool OrderExists(int id)
         {
