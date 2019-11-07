@@ -160,7 +160,62 @@ namespace TestBangazonAPI
                 Assert.Equal(newPaymentTypeId, newOrder.PaymentTypeId);
             }
         }
+        [Fact]
+        public async Task Test_Delete_Order()
+        {
 
+            using (var client = new APIClientProvider().Client)
+            {
+                /*
+                    ARRANGE
+                */
+                Order orderToDelete = new Order
+                {
+                    CustomerId = 1,
+                    PaymentTypeId = 1,
+                    Status = "alive... for now"
+                };
+
+                // Serialize the C# object into a JSON string
+                var orderAsJSON = JsonConvert.SerializeObject(orderToDelete);
+
+                /*
+                    ACT
+                */
+                //Insert object
+                var response = await client.PostAsync(
+                    "/api/orders",
+                    new StringContent(orderAsJSON, Encoding.UTF8, "application/json")
+                );
+                string responseBody = await response.Content.ReadAsStringAsync();
+
+                var newOrder = JsonConvert.DeserializeObject<Order>(responseBody);
+
+                //Get object
+                var getOrderToDelete = await client.GetAsync($"/api/orders/{newOrder.Id}");
+                getOrderToDelete.EnsureSuccessStatusCode();
+
+                string getOrderToDeleteBody = await getOrderToDelete.Content.ReadAsStringAsync();
+                Order newOrderFromResponse = JsonConvert.DeserializeObject<Order>(getOrderToDeleteBody);
+
+                //Delete Object
+                var deleteOrder = await client.DeleteAsync($"/api/orders/{newOrder.Id}");
+                deleteOrder.EnsureSuccessStatusCode();
+                //Try to Get Object Again
+                var attemptGetOrder = await client.GetAsync($"/api/orders/{newOrder.Id}");
+                attemptGetOrder.EnsureSuccessStatusCode();
+
+                string attemptGetOrderBody = await getOrderToDelete.Content.ReadAsStringAsync();
+                Order newAttemptToGetOrder = JsonConvert.DeserializeObject<Order>(attemptGetOrderBody);
+
+
+                /*
+                    ASSERT
+                */
+                Assert.Equal(HttpStatusCode.NoContent, attemptGetOrder.StatusCode);
+
+            }
+        }
     }
 }
 

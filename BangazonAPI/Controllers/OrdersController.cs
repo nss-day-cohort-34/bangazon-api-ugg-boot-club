@@ -381,7 +381,9 @@ namespace BangazonAPI.Controllers
                     {
                         //add the following line to command text when it's time to implement DELETE on associated OrderProducts
                         cmd.CommandText = @"
-                            DELETE FROM [Order] WHERE Id = @id";
+                            DELETE FROM OrderProduct WHERE OrderId = @id
+                            DELETE FROM [Order] WHERE Id = @id
+                            ";
                         cmd.Parameters.Add(new SqlParameter("@id", id));
 
                         int rowsAffected = cmd.ExecuteNonQuery();
