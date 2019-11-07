@@ -47,14 +47,12 @@ namespace BangazonAPI.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    //cmd.CommandText = "SELECT o.Id AS OrderId, o.CustomerId, o.PaymentTypeId, o.Status FROM [Order] o ";
-
                     // includes products on orders in response body
                     if (_include?.ToLower() == "products")
                     {
                         cmd.CommandText = @"SELECT 
 		                                        p.Id AS ProductId, p.Price, p.Title, p.Description, p.Quantity,
-		                                        o.CustomerId AS Order_CustomerId, o.PaymentTypeId, o.Status
+		                                        o.Id AS OrderId, o.CustomerId, o.PaymentTypeId, o.Status
                                             FROM OrderProduct op 
                                             LEFT JOIN [Order] o ON o.Id = op.OrderId
                                             LEFT JOIN Product p ON p.Id = op.ProductId ";
@@ -68,7 +66,41 @@ namespace BangazonAPI.Controllers
                             cmd.CommandText += "WHERE Status != 'Complete'";
                         }
 
+                        SqlDataReader reader = await cmd.ExecuteReaderAsync();
+                        Dictionary<int, Order> orders = new Dictionary<int, Order>();
+                        while (reader.Read())
+                        {
+                            int orderId = reader.GetInt32(reader.GetOrdinal("OrderId"));
+                            if (!orders.ContainsKey(orderId))
+                            {
+                                Order order = new Order()
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("OrderId")),
+                                    CustomerId = reader.GetInt32(reader.GetOrdinal("CustomerId")),
+                                    PaymentTypeId = reader.GetInt32(reader.GetOrdinal("PaymentTypeId")),
+                                    Status = reader.GetString(reader.GetOrdinal("Status")),
+                                };
+                            orders.Add(orderId, order);
+                            }
 
+                            Order fromDictionary = orders[orderId];
+
+                            if (!reader.IsDBNull(reader.GetOrdinal("OrderId")))
+                            {
+                                Product aProduct = new Product()
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("ProductId")),
+                                    Price = reader.GetDecimal(reader.GetOrdinal("Price")),
+                                    Title = reader.GetString(reader.GetOrdinal("Title")),
+                                    Description = reader.GetString(reader.GetOrdinal("Description")),
+                                    Quantity = reader.GetInt32(reader.GetOrdinal("Quantity")),
+                                };
+                                fromDictionary.Products.Add(aProduct);
+                            }
+                        }
+
+                        reader.Close();
+                        return Ok(orders.Values);
                     }
                     
                     // inclues customers on orders in response body
@@ -88,6 +120,43 @@ namespace BangazonAPI.Controllers
                         {
                             cmd.CommandText += "WHERE Status != 'Complete'";
                         }
+
+                        SqlDataReader reader = await cmd.ExecuteReaderAsync();
+                        Dictionary<int, Order> orders = new Dictionary<int, Order>();
+                        while (reader.Read())
+                        {
+                            int orderId = reader.GetInt32(reader.GetOrdinal("OrderId"));
+                            if (!orders.ContainsKey(orderId))
+                            {
+                                Order order = new Order()
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("OrderId")),
+                                    CustomerId = reader.GetInt32(reader.GetOrdinal("CustomerId")),
+                                    PaymentTypeId = reader.GetInt32(reader.GetOrdinal("PaymentTypeId")),
+                                    Status = reader.GetString(reader.GetOrdinal("Status")),
+                                };
+                                orders.Add(orderId, order);
+                            }
+
+                            Order fromDictionary = orders[orderId];
+
+                            if (!reader.IsDBNull(reader.GetOrdinal("OrderId")))
+                            {
+                                Customer aCustomer = new Customer()
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("CustomerId")),
+                                    FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                    LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                                    CreationDate = reader.GetDateTime(reader.GetOrdinal("CreationDate")),
+                                    LastActiveDate = reader.GetDateTime(reader.GetOrdinal("LastActiveDate")),
+                                };
+                                fromDictionary.Customers.Add(aCustomer);
+                            }
+                        }
+
+                        reader.Close();
+
+                        return Ok(orders.Values);
                     }
                     
                     // inclues customers && products on orders in response body
@@ -110,6 +179,51 @@ namespace BangazonAPI.Controllers
                         {
                             cmd.CommandText += "WHERE Status != 'Complete'";
                         }
+
+                        SqlDataReader reader = await cmd.ExecuteReaderAsync();
+                        Dictionary<int, Order> orders = new Dictionary<int, Order>();
+                        while (reader.Read())
+                        {
+                            int orderId = reader.GetInt32(reader.GetOrdinal("OrderId"));
+                            if (!orders.ContainsKey(orderId))
+                            {
+                                Order order = new Order()
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("OrderId")),
+                                    CustomerId = reader.GetInt32(reader.GetOrdinal("CustomerId")),
+                                    PaymentTypeId = reader.GetInt32(reader.GetOrdinal("PaymentTypeId")),
+                                    Status = reader.GetString(reader.GetOrdinal("Status")),
+                                };
+                                orders.Add(orderId, order);
+                            }
+
+                            Order fromDictionary = orders[orderId];
+
+                            if (!reader.IsDBNull(reader.GetOrdinal("OrderId")))
+                            {
+                                Product aProduct = new Product()
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("ProductId")),
+                                    Price = reader.GetDecimal(reader.GetOrdinal("Price")),
+                                    Title = reader.GetString(reader.GetOrdinal("Title")),
+                                    Description = reader.GetString(reader.GetOrdinal("Description")),
+                                    Quantity = reader.GetInt32(reader.GetOrdinal("Quantity")),
+                                };
+                                fromDictionary.Products.Add(aProduct);
+                                Customer aCustomer = new Customer()
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("CustomerId")),
+                                    FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                    LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                                    CreationDate = reader.GetDateTime(reader.GetOrdinal("CreationDate")),
+                                    LastActiveDate = reader.GetDateTime(reader.GetOrdinal("LastActiveDate")),
+                                };
+                                fromDictionary.Customers.Add(aCustomer);
+                            }
+                        }
+
+                        reader.Close();
+                        return Ok(orders.Values);
                     }
                     
                     // if no query string params provided, do generic GET Orders operations
