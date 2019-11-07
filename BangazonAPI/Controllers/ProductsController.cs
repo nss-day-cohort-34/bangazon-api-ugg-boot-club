@@ -37,7 +37,7 @@ namespace BangazonAPI.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = "SELECT Id, ProductTypeId, CustomerId, Price, Title, Description, Quantity FROM Product";
+                    cmd.CommandText = @"SELECT Id, ProductTypeId, CustomerId, Price, Title, Description, Quantity FROM Product";
                     SqlDataReader reader = cmd.ExecuteReader();
                     List<Product> products = new List<Product>();
 
@@ -51,8 +51,7 @@ namespace BangazonAPI.Controllers
                             Price = reader.GetDecimal(reader.GetOrdinal("Price")),
                             Title = reader.GetString(reader.GetOrdinal("Title")),
                             Description = reader.GetString(reader.GetOrdinal("Description")),
-                            Quantity = reader.GetInt32(reader.GetOrdinal("Quantity")),
-                           
+                            Quantity = reader.GetInt32(reader.GetOrdinal("Quantity"))
                         };
 
                         products.Add(product);
@@ -93,7 +92,6 @@ namespace BangazonAPI.Controllers
                             Title = reader.GetString(reader.GetOrdinal("Title")),
                             Description = reader.GetString(reader.GetOrdinal("Description")),
                             Quantity = reader.GetInt32(reader.GetOrdinal("Quantity")),
-                       
                             
                         };
                     }
@@ -190,17 +188,10 @@ namespace BangazonAPI.Controllers
                     conn.Open();
                     using (SqlCommand cmd = conn.CreateCommand())
                     {
-<<<<<<< HEAD
-                        cmd.CommandText = @"UPDATE Product FROM Product WHERE Id = @id";
-                        cmd.Parameters.Add(new SqlParameter("@id", id));
-
-=======
                         cmd.CommandText = @"DELETE FROM OrderProduct WHERE ProductId = @id
-                                            DELETE FROM Product WHERE id = @id";
+                                            DELETE FROM Product WHERE Id = @id";
                         cmd.Parameters.Add(new SqlParameter("@id", id));
 
-
->>>>>>> master
                         int rowsAffected = cmd.ExecuteNonQuery();
                         if (rowsAffected > 0)
                         {
