@@ -8,4 +8,3 @@ LEFT JOIN Computer c on c.CurrentEmployeeId = e.Id;
 
 SELECT * FROM DEPARTMENT
 SELECT * FROM COMPUTER
-

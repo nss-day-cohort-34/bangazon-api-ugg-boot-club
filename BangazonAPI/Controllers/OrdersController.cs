@@ -28,13 +28,7 @@ namespace BangazonAPI.Controllers
                 return new SqlConnection(_config.GetConnectionString("DefaultConnection"));
             }
         }
-        
-        // 1. When an order is deleted, every line item(i.e.entry in OrderProduct) should be removed
-            // ***IIMPLEMENT SOFT DELETE*** :
-                   // a. ADD a 'isDeleted' Column to both Order and OrderProduct Tables ***add "ALTER TABLE..." queries to main seedData script???
-                   // b. toggle the value of from false to true in both TBLs whenever and Order is DELETED
-                   // c. re-factor ALL queries such that "deleted" entries are omitted from response(s)
-
+    
       // GET: api/Orders
       [HttpGet]
         public async Task<IActionResult> Get(string completed, string _include)
