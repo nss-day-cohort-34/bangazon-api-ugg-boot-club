@@ -14,7 +14,7 @@ namespace TestBangazonAPI
     {
 
         [Fact]
-        public async Task Test_Get_All_Computer()
+        public async Task Test_Get_All_Computers()
         {
             using (var client = new APIClientProvider().Client)
             {
@@ -40,7 +40,7 @@ namespace TestBangazonAPI
 
         }
         [Fact]
-        public async Task Test_Get_Computer()
+        public async Task Test_Get_Single_Computer()
         {
 
             using (var client = new APIClientProvider().Client)
@@ -53,101 +53,41 @@ namespace TestBangazonAPI
                 /*
                     ACT
                 */
-                var getComp = await client.GetAsync("/api/computers/1" +
+                var getOneComputer = await client.GetAsync("/api/computers/1" +
                     "");
-                getComp.EnsureSuccessStatusCode();
+                getOneComputer.EnsureSuccessStatusCode();
 
-                string getCompBody = await getComp.Content.ReadAsStringAsync();
-                Computer newComp = JsonConvert.DeserializeObject<Computer>(getCompBody);
-
-                /*
-                    ASSERT
-                */
-                Assert.Equal(HttpStatusCode.OK, getComp.StatusCode);
-
-            }
-        }
-        [Fact]
-        public async Task Test_Post_Computer()
-        {
-            /*
-                Generate a new instance of an HttpClient that you can
-                use to generate HTTP requests to your API controllers.
-                The `using` keyword will automatically dispose of this
-                instance of HttpClient once your code is done executing.
-            */
-            using (var client = new APIClientProvider().Client)
-            {
-                /*
-                    ARRANGE
-                */
-                var newDate = new DateTime(2019, 01, 01);
-
-                // Construct a new student object to be sent to the API
-                Computer Asus = new Computer
-                {
-                    PurchaseDate = newDate,
-                    DecomissionDate = newDate,
-                    Make = "Asus",
-                    Manufacturer  = "XP 500",
-                    CurrentEmployeeId = 2
-                };
-
-                // Serialize the C# object into a JSON string
-                var asusAsJSON = JsonConvert.SerializeObject(Asus);
-
-
-                /*
-                    ACT
-                */
-
-                // Use the client to send the request and store the response
-                var response = await client.PostAsync(
-                    "/api/computer",
-                    new StringContent(asusAsJSON, Encoding.UTF8, "application/json")
-                );
-
-                // Store the JSON body of the response
-                string responseBody = await response.Content.ReadAsStringAsync();
-
-                // Deserialize the JSON into an instance of Animal
-                var newAsus = JsonConvert.DeserializeObject<Computer>(responseBody);
-
+                string getOneBody = await getOneComputer.Content.ReadAsStringAsync();
+                Computer newComp = JsonConvert.DeserializeObject<Computer>(getOneBody);
 
                 /*
                     ASSERT
                 */
+                Assert.Equal(HttpStatusCode.OK, getOneComputer.StatusCode);
 
-                Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-                Assert.Equal(newDate, newAsus.PurchaseDate);
-                Assert.Equal(newDate, newAsus.DecomissionDate);
-                Assert.Equal("Asus", newAsus.Make);
-                Assert.Equal("Manufacturer", newAsus.Manufacturer);
-                Assert.Equal(2, newAsus.CurrentEmployeeId);
             }
         }
         [Fact]
         public async Task Test_Modify_Computer()
         {
             // New last name to change to and test
-            int newCurrentEmployeeId = 4;
-
-            var newDate = new DateTime(2019, 04, 04);
+            int newEmployeeId = 4;
+            var date = new DateTime(2019, 01, 01);
 
             using (var client = new APIClientProvider().Client)
             {
                 /*
                     PUT section
                 */
-                Computer modifiedEmployee = new Computer
+                Computer modifiedEmployeeId = new Computer
                 {
-                    PurchaseDate = newDate,
-                    DecomissionDate =  newDate,
-                    Make = "Mac",
-                    Manufacturer = "Apple",
-                    CurrentEmployeeId = newCurrentEmployeeId,
+                    PurchaseDate = date,
+                    DecomissionDate = date,
+                    Make =  "Something",
+                    Manufacturer = "Something",
+                    CurrentEmployeeId = newEmployeeId
                 };
-                var modifiedEmployeeAsJSON = JsonConvert.SerializeObject(modifiedEmployee);
+                var modifiedEmployeeAsJSON = JsonConvert.SerializeObject(modifiedEmployeeId);
 
                 var response = await client.PutAsync(
                     "/api/computer/1",
@@ -162,33 +102,37 @@ namespace TestBangazonAPI
                     GET section
                     Verify that the PUT operation was successful
                 */
-                var getComp = await client.GetAsync("/api/computer/1");
-                getComp.EnsureSuccessStatusCode();
+                var getUpdate = await client.GetAsync("/api/computer/1");
+                getUpdate.EnsureSuccessStatusCode();
 
-                string getCompBody = await getComp.Content.ReadAsStringAsync();
-                Computer newComp = JsonConvert.DeserializeObject<Computer>(getCompBody);
+                string getUpdatedBody = await getUpdate.Content.ReadAsStringAsync();
+                Computer newComp = JsonConvert.DeserializeObject<Computer>(getUpdatedBody);
 
-                Assert.Equal(HttpStatusCode.OK, getComp.StatusCode);
-                Assert.Equal(newCurrentEmployeeId, newComp.CurrentEmployeeId);
+                Assert.Equal(HttpStatusCode.OK, getUpdate.StatusCode);
+                Assert.Equal(newEmployeeId, newComp.CurrentEmployeeId);
             }
         }
         [Fact]
         public async Task Test_Delete_Computer()
         {
+            var date = new DateTime(2019, 01, 01);
 
             using (var client = new APIClientProvider().Client)
             {
                 /*
                     ARRANGE
                 */
-                Computer Seven = new Computer
+                Computer Something = new Computer
                 {
                     Id = -1,
-                    Make = "777"
+                    PurchaseDate = date,
+                    DecomissionDate = date,
+                    Make = "Something",
+                    Manufacturer = "Something"
                 };
 
                 // Serialize the C# object into a JSON string
-                var sevenAsJSON = JsonConvert.SerializeObject(Seven);
+                var somethingAsJSON = JsonConvert.SerializeObject(Something);
 
 
                 /*
@@ -196,38 +140,38 @@ namespace TestBangazonAPI
                 */
                 //Insert object
                 var response = await client.PostAsync(
-                    "/api/computer",
-                    new StringContent(sevenAsJSON, Encoding.UTF8, "application/json")
+                    "/api/PaymentType",
+                    new StringContent(somethingAsJSON, Encoding.UTF8, "application/json")
                 );
                 string responseBody = await response.Content.ReadAsStringAsync();
 
-                var newComp = JsonConvert.DeserializeObject<Computer>(responseBody);
+                var newType = JsonConvert.DeserializeObject<Computer>(responseBody);
 
                 //Get object
-                var getSeven = await client.GetAsync("/api/computer/-1" +
+                var getSomething = await client.GetAsync("/api/computer/-1" +
                     "");
-                getSeven.EnsureSuccessStatusCode();
+                getSomething.EnsureSuccessStatusCode();
 
-                string getSevenBody = await getSeven.Content.ReadAsStringAsync();
-                Computer newSeven = JsonConvert.DeserializeObject<Computer>(getSevenBody);
+                string getSomethingBody = await getSomething.Content.ReadAsStringAsync();
+                Computer newSomething = JsonConvert.DeserializeObject<Computer>(getSomethingBody);
 
                 //Delete Object
-                var deleteSeven = await client.DeleteAsync("/api/computer/-1" +
+                var deleteSomething = await client.DeleteAsync("/api/computer/-1" +
                     "");
-                getSeven.EnsureSuccessStatusCode();
+                getSomething.EnsureSuccessStatusCode();
                 //Try to Get Object Again
-                var attemptGetSeven = await client.GetAsync("/api/computer/-1" +
+                var attemptGetSomething = await client.GetAsync("/api/computer/-1" +
                     "");
-                attemptGetSeven.EnsureSuccessStatusCode();
+                attemptGetSomething.EnsureSuccessStatusCode();
 
-                string attemptGetSevenBody = await getSeven.Content.ReadAsStringAsync();
-                Computer newAttemptSeven = JsonConvert.DeserializeObject<Computer>(attemptGetSevenBody);
+                string attemptGetSomethingBody = await getSomething.Content.ReadAsStringAsync();
+                Computer newAttemptSomething = JsonConvert.DeserializeObject<Computer>(attemptGetSomethingBody);
 
 
                 /*
                     ASSERT
                 */
-                Assert.Equal(HttpStatusCode.NoContent, attemptGetSeven.StatusCode);
+                Assert.Equal(HttpStatusCode.NoContent, attemptGetSomething.StatusCode);
 
             }
         }

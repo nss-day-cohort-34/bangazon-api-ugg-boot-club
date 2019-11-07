@@ -82,7 +82,7 @@ namespace BangazonAPI.Controllers
         }
 
         // GET
-        [HttpGet("{id}", Name = "GetComputer")]
+        [HttpGet("{id}", Name = "GetSingleComputer")]
         public async Task<IActionResult> Get(int id)
         {
             using (SqlConnection conn = Connection)
@@ -90,7 +90,7 @@ namespace BangazonAPI.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT Id, PurchaseDate, DecomissionDate, Make, Manufacturer,
+                    cmd.CommandText = @"SELECT Id, PurchaseDate, IsNull(DecomissionDate, '') AS DecomissionDate, Make, Manufacturer, CurrentEmployeeId
                                         FROM Computer
                                         WHERE Id = @id";
                     cmd.Parameters.Add(new SqlParameter("@id", id));
