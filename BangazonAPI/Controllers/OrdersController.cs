@@ -31,48 +31,122 @@ namespace BangazonAPI.Controllers
         // GET: api/Orders
         
         // 1. When an order is deleted, every line item(i.e.entry in OrderProduct) should be removed
-        // 2. Should be able to filter out completed orders with the ?completed=false query string parameter.If the parameter value is true, then only completed order should be returned.
+            // ***DO SOFT DELETE*** :
+                   // a. ADD a 'isDeleted' Column to both Order and OrderProduct Tables
+                   // b. toggle the value of from false to true in both TBLs whenever and Order is DELETED
+                   // c. re-factor ALL queries such that "deleted" entries are omitted from response(s)
+        
         // 3. If the query string parameter of? _include = products is in the URL, then the list of products in the order should be returned.
         // 4. If the query string parameter of? _include = customers is in the URL, then the customer representation should be included in the response.
 
       [HttpGet]
-        public async Task<IActionResult> Get(string completed)
+        public async Task<IActionResult> Get(string completed, string _include)
         {
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = "SELECT o.Id AS OrderId, o.CustomerId, o.PaymentTypeId, o.Status FROM [Order] o ";
-                    if (completed?.ToLower() == "true")
-                    {
-                        cmd.CommandText += "WHERE Status LIKE '%omplete%'";
-                    }
-                    else if (completed?.ToLower() == "false")
-                    {
-                        cmd.CommandText += "WHERE Status NOT LIKE '%omplete%'";
-                    }
+                    //cmd.CommandText = "SELECT o.Id AS OrderId, o.CustomerId, o.PaymentTypeId, o.Status FROM [Order] o ";
 
-                    
-                    SqlDataReader reader = await cmd.ExecuteReaderAsync();
-                    List<Order> orders = new List<Order>();
-                    while (reader.Read())
+                    // includes products on orders in response body
+                    if (_include?.ToLower() == "products")
                     {
-                        Order order = new Order()
+                        cmd.CommandText = @"SELECT 
+		                                        p.Id AS ProductId, p.Price, p.Title, p.Description, p.Quantity,
+		                                        o.CustomerId AS Order_CustomerId, o.PaymentTypeId, o.Status
+                                            FROM OrderProduct op 
+                                            LEFT JOIN [Order] o ON o.Id = op.OrderId
+                                            LEFT JOIN Product p ON p.Id = op.ProductId ";
+                        if (completed?.ToLower() == "true")
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("OrderId")),
-                            CustomerId = reader.GetInt32(reader.GetOrdinal("CustomerId")),
-                            PaymentTypeId = reader.GetInt32(reader.GetOrdinal("PaymentTypeId")),
-                            Status = reader.GetString(reader.GetOrdinal("Status")),
-                        };
+                            cmd.CommandText += "WHERE Status = 'Complete'";
+                        }
 
-                        orders.Add(order);
+                        else if (completed?.ToLower() == "false")
+                        {
+                            cmd.CommandText += "WHERE Status != 'Complete'";
+                        }
+
+
                     }
+                    
+                    // inclues customers on orders in response body
+                    else if (_include?.ToLower() == "customers")
+                    {
+                        cmd.CommandText = @"SELECT 
+		                                        o.Id AS OrderId, o.PaymentTypeId, o.Status, o.CustomerId,
+		                                        c.FirstName, c.LastName, c.CreationDate, c.LastActiveDate
+                                            From [Order] o 
+                                            LEFT JOIN Customer c ON c.Id = o.CustomerId ";
+                        if (completed?.ToLower() == "true")
+                        {
+                            cmd.CommandText += "WHERE Status = 'Complete'";
+                        }
+
+                        else if (completed?.ToLower() == "false")
+                        {
+                            cmd.CommandText += "WHERE Status != 'Complete'";
+                        }
+                    }
+                    
+                    // inclues customers && products on orders in response body
+                    else if (_include?.ToLower() == "customers&products" || _include?.ToLower() == "products&customers")
+                    {
+                        cmd.CommandText = @"SELECT 
+		                                        p.Id AS ProductId, p.Price, p.Title, p.Description, p.Quantity,
+		                                        o.Id AS OrderId, o.CustomerId AS Order_CustomerId, o.PaymentTypeId, o.Status,
+		                                        c.FirstName, c.LastName, c.CreationDate, c.LastActiveDate
+                                            FROM OrderProduct op 
+                                            LEFT JOIN [Order] o ON o.Id = op.OrderId
+                                            LEFT JOIN Product p ON p.Id = op.ProductId
+                                            LEFT JOIN Customer c ON c.Id = o.CustomerId ";
+                        if (completed?.ToLower() == "true")
+                        {
+                            cmd.CommandText += "WHERE Status = 'Complete'";
+                        }
+
+                        else if (completed?.ToLower() == "false")
+                        {
+                            cmd.CommandText += "WHERE Status != 'Complete'";
+                        }
+                    }
+                    
+                    // if no query string params provided, do generic GET Orders operations
+                    else
+                    {
+                        cmd.CommandText = "SELECT o.Id AS OrderId, o.CustomerId, o.PaymentTypeId, o.Status FROM [Order] o ";
+                        
+                        if (completed?.ToLower() == "true")
+                        {
+                            cmd.CommandText += "WHERE Status = 'Complete'";
+                        }
+
+                        else if (completed?.ToLower() == "false")
+                        {
+                            cmd.CommandText += "WHERE Status != 'Complete'";
+                        }
+
+                        SqlDataReader reader = await cmd.ExecuteReaderAsync();
+                        List<Order> orders = new List<Order>();
+                        while (reader.Read())
+                        {
+                            Order order = new Order()
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("OrderId")),
+                                CustomerId = reader.GetInt32(reader.GetOrdinal("CustomerId")),
+                                PaymentTypeId = reader.GetInt32(reader.GetOrdinal("PaymentTypeId")),
+                                Status = reader.GetString(reader.GetOrdinal("Status")),
+                            };
+
+                            orders.Add(order);
+                        }
 
 
-                    reader.Close();
+                        reader.Close();
 
-                    return Ok(orders);
+                        return Ok(orders);
+                    }
                 }
             }
         }
