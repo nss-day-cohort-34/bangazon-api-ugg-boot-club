@@ -32,13 +32,63 @@ namespace BangazonAPI.Controllers
 
         // GET api/Department
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get(string _include)
         {
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
+                    if(_include?.ToLower() == "employees")
+                    {
+                        cmd.CommandText = @"SELECT d.Id, d.Name, d.Budget, e.Id AS EmployeeId, e.FirstName, e.LastName, e.DepartmentId, e.IsSuperVisor, e.StartDate, IsNull(e.EndDate, '') AS EndDate
+                                            FROM Department d
+                                            LEFT JOIN Employee e on e.DepartmentId = d.Id";
+
+                        SqlDataReader reader = await cmd.ExecuteReaderAsync();
+
+                        Dictionary<int, Department> departments = new Dictionary<int, Department>();
+                        while (reader.Read())
+                        {
+                            int departmentId = reader.GetInt32(reader.GetOrdinal("Id"));
+                            if (!departments.ContainsKey(departmentId))
+                            {
+
+
+                                Department department = new Department
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                    Name = reader.GetString(reader.GetOrdinal("Name")),
+                                    Budget = reader.GetInt32(reader.GetOrdinal("Budget"))
+
+                                };
+
+                                departments.Add(departmentId, department);
+                            }
+                            Department fromDictionary = departments[departmentId];
+                            if (!reader.IsDBNull(reader.GetOrdinal("EmployeeId")))
+                            {
+                                Employee anEmployee = new Employee()
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                    FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                    LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                                    DepartmentId = reader.GetInt32(reader.GetOrdinal("DepartmentId")),
+                                    IsSuperVisor = reader.GetBoolean(reader.GetOrdinal("IsSuperVisor")),
+                                    StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate")),
+                                    EndDate = reader.GetDateTime(reader.GetOrdinal("EndDate")),
+                                };
+                                fromDictionary.employees.Add(anEmployee);
+                            }
+                        }
+
+                        reader.Close();
+
+                        return Ok(departments.Values);
+                    }
+                    //else if filter budget
+                    else
+                    {
                     cmd.CommandText = @"SELECT Id, Name, Budget FROM Department";
 
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
@@ -61,12 +111,14 @@ namespace BangazonAPI.Controllers
 
                             departments.Add(departmentId, department);
                         }
-                        Department fromDictionary = departments[departmentId];
                     }
 
                     reader.Close();
 
                     return Ok(departments.Values);
+
+                    }
+
                 }
             }
         }
@@ -81,7 +133,8 @@ namespace BangazonAPI.Controllers
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = @"SELECT Id, Name, Budget FROM Department
-                                        WHERE Id = @id";
+                                        WHERE 
+Id = @id";
                     cmd.Parameters.Add(new SqlParameter("@id", id));
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
