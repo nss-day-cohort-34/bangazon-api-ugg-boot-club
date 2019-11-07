@@ -81,13 +81,13 @@ namespace TestBangazonAPI
                 /*
                     ARRANGE
                 */
-                var fuckingDate = new DateTime(2019, 01, 01);
+                var newDate = new DateTime(2019, 01, 01);
 
                 // Construct a new student object to be sent to the API
                 Computer Asus = new Computer
                 {
-                    PurchaseDate = fuckingDate,
-                    DecomissionDate = fuckingDate,
+                    PurchaseDate = newDate,
+                    DecomissionDate = newDate,
                     Make = "Asus",
                     Manufacturer  = "XP 500",
                     CurrentEmployeeId = 2
@@ -119,8 +119,8 @@ namespace TestBangazonAPI
                 */
 
                 Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-                Assert.Equal(fuckingDate, newAsus.PurchaseDate);
-                Assert.Equal(fuckingDate, newAsus.DecomissionDate);
+                Assert.Equal(newDate, newAsus.PurchaseDate);
+                Assert.Equal(newDate, newAsus.DecomissionDate);
                 Assert.Equal("Asus", newAsus.Make);
                 Assert.Equal("Manufacturer", newAsus.Manufacturer);
                 Assert.Equal(2, newAsus.CurrentEmployeeId);
@@ -132,7 +132,7 @@ namespace TestBangazonAPI
             // New last name to change to and test
             int newCurrentEmployeeId = 4;
 
-            var fuckingDate = new DateTime(2019, 04, 04);
+            var newDate = new DateTime(2019, 04, 04);
 
             using (var client = new APIClientProvider().Client)
             {
@@ -141,8 +141,8 @@ namespace TestBangazonAPI
                 */
                 Computer modifiedEmployee = new Computer
                 {
-                    PurchaseDate = fuckingDate,
-                    DecomissionDate =  fuckingDate,
+                    PurchaseDate = newDate,
+                    DecomissionDate =  newDate,
                     Make = "Mac",
                     Manufacturer = "Apple",
                     CurrentEmployeeId = newCurrentEmployeeId,
