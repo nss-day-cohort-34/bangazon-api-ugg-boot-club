@@ -32,16 +32,16 @@ namespace BangazonAPI.Controllers
 
         // GET api/Employee
         [HttpGet]
-        public async Task<IActionResult> Get(string _include, string q)
+        public async Task<IActionResult> Get()
         {
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT e.Id, e.FirstName, e.LastName, e.DepartmentId, e.IsSuperVisor, e.StartDate, e.EndDate
-			                                    d.Name,
-			                                    c. Make, C.Manufacturer
+                    cmd.CommandText = @"SELECT e.Id, e.FirstName, e.LastName, e.DepartmentId, e.IsSuperVisor, e.StartDate, IsNull(e.EndDate, '') AS EndDate,
+			                                    d.Name, d.Budget,
+			                                    IsNull(c. Make, '') AS Make, IsNull(c.Manufacturer, '') AS Manufacturer
                                                 FROM EMPLOYEE e
                                                 INNER JOIN Department d on d.Id = e.DepartmentId
                                                 LEFT JOIN Computer c on c.CurrentEmployeeId = e.Id";
@@ -53,7 +53,9 @@ namespace BangazonAPI.Controllers
                     {
                         int employeeId = reader.GetInt32(reader.GetOrdinal("Id"));
                         if (!employees.ContainsKey(employeeId))
-                        {
+                        { 
+                 
+                            
                             Employee employee = new Employee
                             {
                                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
@@ -66,7 +68,8 @@ namespace BangazonAPI.Controllers
                                 Department = new Department()
                                 {
                                     Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                                    Name = reader.GetString(reader.GetOrdinal("Name"))
+                                    Name = reader.GetString(reader.GetOrdinal("Name")),
+                                    Budget = reader.GetInt32(reader.GetOrdinal("Budget"))
                                 },
                                 Computer = new Computer()
                                 {
