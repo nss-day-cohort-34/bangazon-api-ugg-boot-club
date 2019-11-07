@@ -32,73 +32,136 @@ namespace BangazonAPI.Controllers
 
         // GET api/customers
         [HttpGet]
-        public async Task<IActionResult> Get(string _include, string q)
+        public async Task<IActionResult> Get(string _include)
         {
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    //cmd.CommandText = @"SELECT Id, FirstName, LastName, CreationDate, LastActiveDate 
-                    //                    FROM Customer";
-
-                    cmd.CommandText = @"SELECT c.Id, c.FirstName, c.LastName, c.CreationDate, 
-                                                c.LastActiveDate, p.Id AS ProductId, p.ProductTypeId, p.Price, p.Title, p.Description, p.Quantity
-                                            FROM Customer c INNER JOIN Product p ON p.CustomerId = c.Id";
-
                     if (_include?.ToLower() == "products")
                     {
                         cmd.CommandText = @"SELECT c.Id, c.FirstName, c.LastName, c.CreationDate, 
-                                                c.LastActiveDate, p.Id AS ProductId, p.ProductTypeId, p.Price, p.Title, p.Description, p.Quantity
-                                            FROM Customer c INNER JOIN Product p ON p.CustomerId = c.Id";
-                                  
-                    }
-                    //else if (_include?.ToLower() == "payments")
-                    //{
-                    //    cmd.CommandText = @"SELECT c.Id, c.FirstName, c.LastName, c.CreationDate, 
-                    //                            c.LastActiveDate, p.Id AS PaymentId, p.AcctNumber, p.Name
-                    //                        FROM Customer c INNER JOIN PaymentType p ON p.CustomerId = c.Id";
-                    //}
+                            c.LastActiveDate, p.Id AS ProductId, p.ProductTypeId, p.Price, p.Title, p.Description, p.Quantity
+                        FROM Customer c INNER JOIN Product p ON p.CustomerId = c.Id";
 
-                    SqlDataReader reader = await cmd.ExecuteReaderAsync();
+                        SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
-                    Dictionary<int, Customer> customers = new Dictionary<int, Customer>();
-                    while (reader.Read())
-                    {
-                        int customerId = reader.GetInt32(reader.GetOrdinal("Id"));
-                        if (!customers.ContainsKey(customerId))
-                        { 
-                            Customer customer = new Customer
-                            {
-                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                                FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
-                                LastName = reader.GetString(reader.GetOrdinal("LastName")),
-                                CreationDate = reader.GetDateTime(reader.GetOrdinal("CreationDate")),
-                                LastActiveDate = reader.GetDateTime(reader.GetOrdinal("LastActiveDate"))
-                            };
-
-                            customers.Add(customerId, customer);
-                        }
-                    Customer fromDictionary = customers[customerId];
-                        
-                        if (!reader.IsDBNull(reader.GetOrdinal("ProductId")))
+                        Dictionary<int, Customer> customers = new Dictionary<int, Customer>();
+                        while (reader.Read())
                         {
-                            Product aProduct = new Product()
+                            int customerId = reader.GetInt32(reader.GetOrdinal("Id"));
+                            if (!customers.ContainsKey(customerId))
                             {
-                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                                ProductTypeId = reader.GetInt32(reader.GetOrdinal("ProductTypeId")),
-                                Price = reader.GetDecimal(reader.GetOrdinal("Price")),
-                                Title = reader.GetString(reader.GetOrdinal("Title")),
-                                Description = reader.GetString(reader.GetOrdinal("Description")),
-                                Quantity = reader.GetInt32(reader.GetOrdinal("Quantity"))
-                            };
-                            fromDictionary.Products.Add(aProduct);
+                                Customer customer = new Customer
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                    FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                    LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                                    CreationDate = reader.GetDateTime(reader.GetOrdinal("CreationDate")),
+                                    LastActiveDate = reader.GetDateTime(reader.GetOrdinal("LastActiveDate"))
+                                };
+
+                                customers.Add(customerId, customer);
+                            }
+                            Customer fromDictionary = customers[customerId];
+
+                            if (!reader.IsDBNull(reader.GetOrdinal("ProductId")))
+                            {
+                                Product aProduct = new Product()
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                    ProductTypeId = reader.GetInt32(reader.GetOrdinal("ProductTypeId")),
+                                    Price = reader.GetDecimal(reader.GetOrdinal("Price")),
+                                    Title = reader.GetString(reader.GetOrdinal("Title")),
+                                    Description = reader.GetString(reader.GetOrdinal("Description")),
+                                    Quantity = reader.GetInt32(reader.GetOrdinal("Quantity"))
+                                };
+                                fromDictionary.Products.Add(aProduct);
+                            }
                         }
+
+                        reader.Close();
+
+                        return Ok(customers.Values);
+
+
                     }
 
-                    reader.Close();
 
-                    return Ok(customers.Values);
+                    else if (_include?.ToLower() == "payments")
+                    {
+                        cmd.CommandText = @"SELECT c.Id, c.FirstName, c.LastName, c.CreationDate, 
+                                                    c.LastActiveDate, p.Id AS PaymentId, p.AcctNumber, p.Name, p.CustomerId
+                                                FROM Customer c INNER JOIN PaymentType p ON p.CustomerId = c.Id";
+
+                        SqlDataReader reader = await cmd.ExecuteReaderAsync();
+
+                        Dictionary<int, Customer> customers = new Dictionary<int, Customer>();
+                        while (reader.Read())
+                        {
+                            int customerId = reader.GetInt32(reader.GetOrdinal("Id"));
+                            if (!customers.ContainsKey(customerId))
+                            {
+                                Customer customer = new Customer
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                    FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                    LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                                    CreationDate = reader.GetDateTime(reader.GetOrdinal("CreationDate")),
+                                    LastActiveDate = reader.GetDateTime(reader.GetOrdinal("LastActiveDate"))
+                                };
+
+                                customers.Add(customerId, customer);
+                            }
+                            Customer fromDictionary = customers[customerId];
+
+                            if (!reader.IsDBNull(reader.GetOrdinal("PaymentId")))
+                            {
+                                PaymentType aPaymentType = new PaymentType()
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                    AcctNumber = reader.GetString(reader.GetOrdinal("AcctNumber")),
+                                    Name = reader.GetString(reader.GetOrdinal("Name")),
+                                    CustomerId = reader.GetInt32(reader.GetOrdinal("CustomerId"))
+                                };
+                                fromDictionary.PaymentTypes.Add(aPaymentType);
+                            }
+                        }
+
+                        reader.Close();
+
+                        return Ok(customers.Values);
+                    }
+
+                    else
+                    {
+                        cmd.CommandText = @"SELECT Id, FirstName, LastName, CreationDate, LastActiveDate 
+                                       FROM Customer";
+
+                        SqlDataReader reader = await cmd.ExecuteReaderAsync();
+
+                        Dictionary<int, Customer> customers = new Dictionary<int, Customer>();
+                        while (reader.Read())
+                        {
+                            int customerId = reader.GetInt32(reader.GetOrdinal("Id"));
+                            if (!customers.ContainsKey(customerId))
+                            {
+                                Customer customer = new Customer
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                    FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                    LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                                    CreationDate = reader.GetDateTime(reader.GetOrdinal("CreationDate")),
+                                    LastActiveDate = reader.GetDateTime(reader.GetOrdinal("LastActiveDate"))
+                                };
+
+                                customers.Add(customerId, customer);
+                            }
+                        }
+                        reader.Close();
+                        return Ok(customers.Values);
+                    }
                 }
             }
         }
@@ -236,3 +299,17 @@ namespace BangazonAPI.Controllers
         }
     }
 }
+//if (_include?.ToLower() == "products")
+//{
+
+//    cmd.CommandText = @"SELECT c.Id, c.FirstName, c.LastName, c.CreationDate, 
+//                            c.LastActiveDate, p.Id AS ProductId, p.ProductTypeId, p.Price, p.Title, p.Description, p.Quantity
+//                        FROM Customer c INNER JOIN Product p ON p.CustomerId = c.Id";
+
+//}
+//else if (_include?.ToLower() == "payments")
+//{
+//    cmd.CommandText = @"SELECT c.Id, c.FirstName, c.LastName, c.CreationDate, 
+//                            c.LastActiveDate, p.Id AS PaymentId, p.AcctNumber, p.Name
+//                        FROM Customer c INNER JOIN PaymentType p ON p.CustomerId = c.Id";
+//}
