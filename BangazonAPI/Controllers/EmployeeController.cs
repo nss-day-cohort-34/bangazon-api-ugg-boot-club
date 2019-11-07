@@ -101,9 +101,9 @@ namespace BangazonAPI.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT e.Id, e.FirstName, e.LastName, e.DepartmentId, e.IsSuperVisor, e.StartDate, e.EndDate,
-			                                    d.Name,
-			                                    c. Make, C.Manufacturer
+                    cmd.CommandText = @"SELECT e.Id, e.FirstName, e.LastName, e.DepartmentId, e.IsSuperVisor, e.StartDate, IsNull(e.EndDate, '') AS EndDate,
+			                                    d.Name, d.Budget,
+			                                    IsNull(c. Make, '') AS Make, IsNull(c.Manufacturer, '') AS Manufacturer
                                                 FROM EMPLOYEE e
                                                 INNER JOIN Department d on d.Id = e.DepartmentId
                                                 LEFT JOIN Computer c on c.CurrentEmployeeId = e.Id
@@ -118,7 +118,7 @@ namespace BangazonAPI.Controllers
                         {
                             Id = reader.GetInt32(reader.GetOrdinal("Id")),
                             FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
-                            LastName = reader.GetString(reader.GetOrdinal("FirstName")),
+                            LastName = reader.GetString(reader.GetOrdinal("LastName")),
                             DepartmentId = reader.GetInt32(reader.GetOrdinal("DepartmentId")),
                             IsSuperVisor = reader.GetBoolean(reader.GetOrdinal("IsSuperVisor")),
                             StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate")),
@@ -126,7 +126,8 @@ namespace BangazonAPI.Controllers
                             Department = new Department()
                             {
                                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                                Name = reader.GetString(reader.GetOrdinal("Name"))
+                                Name = reader.GetString(reader.GetOrdinal("Name")),
+                                Budget = reader.GetInt32(reader.GetOrdinal("Budget"))
                             },
                             Computer = new Computer()
                             {
@@ -186,10 +187,11 @@ namespace BangazonAPI.Controllers
                     {
                         cmd.CommandText = @"
                             UPDATE Employee
-                            SET Name = @name, FirstName = @firstNAme, LastName = @lastName, DepartmentId = @departmentId, IsSuperVisor = @isSuperVisor, StartDate = @startDate, EndDate = @endDate
+                            SET FirstName = @firstName, LastName = @lastName, DepartmentId = @departmentId, IsSuperVisor = @isSuperVisor, StartDate = @startDate, EndDate = @endDate
                             WHERE Id = @id
                         ";
                         cmd.Parameters.Add(new SqlParameter("@id", id));
+                        cmd.Parameters.Add(new SqlParameter("@firstName", employee.FirstName));
                         cmd.Parameters.Add(new SqlParameter("@lastName", employee.LastName));
                         cmd.Parameters.Add(new SqlParameter("@departmentId", employee.DepartmentId));
                         cmd.Parameters.Add(new SqlParameter("@isSuperVisor", employee.IsSuperVisor));
