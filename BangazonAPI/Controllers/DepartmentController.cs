@@ -71,7 +71,7 @@ namespace BangazonAPI.Controllers
             }
         }
 
-        // GET api/employee/5
+        // GET api/department/5
         [HttpGet("{id}", Name = "GetDepartment")]
         public async Task<IActionResult> Get(int id)
         {
@@ -81,7 +81,7 @@ namespace BangazonAPI.Controllers
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = @"SELECT Id, Name, Budget FROM Department
-                                        WHERE e.Id = @id";
+                                        WHERE Id = @id";
                     cmd.Parameters.Add(new SqlParameter("@id", id));
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
@@ -103,9 +103,9 @@ namespace BangazonAPI.Controllers
             }
         }
 
-        // POST api/employee
+        // POST api/department
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] Employee employee)
+        public async Task<IActionResult> Post([FromBody] Department department)
         {
             using (SqlConnection conn = Connection)
             {
@@ -114,27 +114,23 @@ namespace BangazonAPI.Controllers
                 {
                     // More string interpolation
                     cmd.CommandText = @"
-                        INSERT INTO Employee (FirstName, LastName, DepartmentId, IsSuperVisor, StartDate, EndDate)
+                        INSERT INTO Department (Name, Budget)
                         OUTPUT INSERTED.Id
-                        VALUES (@firstName, @lastName, @departmentId, @isSuperVisor, @startDate, @endDate)
+                        VALUES (@name, @budget)
                     ";
-                    cmd.Parameters.Add(new SqlParameter("@firstName", employee.FirstName));
-                    cmd.Parameters.Add(new SqlParameter("@lastName", employee.LastName));
-                    cmd.Parameters.Add(new SqlParameter("@departmentId", employee.DepartmentId));
-                    cmd.Parameters.Add(new SqlParameter("@isSuperVisor", employee.IsSuperVisor));
-                    cmd.Parameters.Add(new SqlParameter("@startDate", employee.StartDate));
-                    cmd.Parameters.Add(new SqlParameter("@endDate", employee.EndDate));
+                    cmd.Parameters.Add(new SqlParameter("@name", department.Name));
+                    cmd.Parameters.Add(new SqlParameter("@budget", department.Budget));
 
-                    employee.Id = (int)await cmd.ExecuteScalarAsync();
+                    department.Id = (int)await cmd.ExecuteScalarAsync();
 
-                    return CreatedAtRoute("GetEmployee", new { id = employee.Id }, employee);
+                    return CreatedAtRoute("GetDepartment", new { id = department.Id }, department);
                 }
             }
         }
 
-        // PUT api/employee/5
+        // PUT api/department/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put([FromRoute] int id, [FromBody] Employee employee)
+        public async Task<IActionResult> Put([FromRoute] int id, [FromBody] Department department)
         {
             try
             {
@@ -144,17 +140,14 @@ namespace BangazonAPI.Controllers
                     using (SqlCommand cmd = conn.CreateCommand())
                     {
                         cmd.CommandText = @"
-                            UPDATE Employee
-                            SET FirstName = @firstName, LastName = @lastName, DepartmentId = @departmentId, IsSuperVisor = @isSuperVisor, StartDate = @startDate, EndDate = @endDate
+                            UPDATE Department
+                            SET Name = @name, Budget = @budget
                             WHERE Id = @id
                         ";
                         cmd.Parameters.Add(new SqlParameter("@id", id));
-                        cmd.Parameters.Add(new SqlParameter("@firstName", employee.FirstName));
-                        cmd.Parameters.Add(new SqlParameter("@lastName", employee.LastName));
-                        cmd.Parameters.Add(new SqlParameter("@departmentId", employee.DepartmentId));
-                        cmd.Parameters.Add(new SqlParameter("@isSuperVisor", employee.IsSuperVisor));
-                        cmd.Parameters.Add(new SqlParameter("@startDate", employee.StartDate));
-                        cmd.Parameters.Add(new SqlParameter("@endDate", employee.EndDate));
+                        cmd.Parameters.Add(new SqlParameter("@name", department.Name));
+                        cmd.Parameters.Add(new SqlParameter("@budget", department.Budget));
+                      
 
                         int rowsAffected = await cmd.ExecuteNonQueryAsync();
 
@@ -169,7 +162,7 @@ namespace BangazonAPI.Controllers
             }
             catch (Exception)
             {
-                if (!EmployeeExists(id))
+                if (!DepartmentExists(id))
                 {
                     return NotFound();
                 }
@@ -180,7 +173,7 @@ namespace BangazonAPI.Controllers
             }
         }
 
-        // DELETE api/employee/5
+        // DELETE api/department/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
@@ -191,7 +184,7 @@ namespace BangazonAPI.Controllers
                     conn.Open();
                     using (SqlCommand cmd = conn.CreateCommand())
                     {
-                        cmd.CommandText = @"DELETE FROM Employee WHERE Id = @id";
+                        cmd.CommandText = @"DELETE FROM Department WHERE Id = @id";
                         cmd.Parameters.Add(new SqlParameter("@id", id));
 
                         int rowsAffected = cmd.ExecuteNonQuery();
@@ -205,7 +198,7 @@ namespace BangazonAPI.Controllers
             }
             catch (Exception)
             {
-                if (!EmployeeExists(id))
+                if (!DepartmentExists(id))
                 {
                     return NotFound();
                 }
@@ -216,14 +209,14 @@ namespace BangazonAPI.Controllers
             }
         }
 
-        private bool EmployeeExists(int id)
+        private bool DepartmentExists(int id)
         {
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = "SELECT Id FROM Employee WHERE Id = @id";
+                    cmd.CommandText = "SELECT Id FROM Department WHERE Id = @id";
                     cmd.Parameters.Add(new SqlParameter("@id", id));
 
                     SqlDataReader reader = cmd.ExecuteReader();
