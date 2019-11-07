@@ -221,8 +221,12 @@ namespace BangazonAPI.Controllers
                     // if no query string params provided, do generic GET Orders operations
                     else
                     {
-                        cmd.CommandText = "SELECT o.Id AS OrderId, o.CustomerId, o.PaymentTypeId, o.Status FROM [Order] o ";
-                        
+                        cmd.CommandText = @"SELECT 
+		                                        p.Id AS ProductId, p.Price, p.Title, p.Description, p.Quantity,
+		                                        o.Id AS OrderId, o.CustomerId, o.PaymentTypeId, o.Status
+                                            FROM OrderProduct op 
+                                            LEFT JOIN [Order] o ON o.Id = op.OrderId
+                                            LEFT JOIN Product p ON p.Id = op.ProductId ";
                         if (completed?.ToLower() == "true")
                         {
                             cmd.CommandText += "WHERE Status = 'Complete'";
@@ -234,24 +238,40 @@ namespace BangazonAPI.Controllers
                         }
 
                         SqlDataReader reader = await cmd.ExecuteReaderAsync();
-                        List<Order> orders = new List<Order>();
+                        Dictionary<int, Order> orders = new Dictionary<int, Order>();
                         while (reader.Read())
                         {
-                            Order order = new Order()
+                            int orderId = reader.GetInt32(reader.GetOrdinal("OrderId"));
+                            if (!orders.ContainsKey(orderId))
                             {
-                                Id = reader.GetInt32(reader.GetOrdinal("OrderId")),
-                                CustomerId = reader.GetInt32(reader.GetOrdinal("CustomerId")),
-                                PaymentTypeId = reader.GetInt32(reader.GetOrdinal("PaymentTypeId")),
-                                Status = reader.GetString(reader.GetOrdinal("Status")),
-                            };
+                                Order order = new Order()
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("OrderId")),
+                                    CustomerId = reader.GetInt32(reader.GetOrdinal("CustomerId")),
+                                    PaymentTypeId = reader.GetInt32(reader.GetOrdinal("PaymentTypeId")),
+                                    Status = reader.GetString(reader.GetOrdinal("Status")),
+                                };
+                                orders.Add(orderId, order);
+                            }
 
-                            orders.Add(order);
+                            Order fromDictionary = orders[orderId];
+
+                            if (!reader.IsDBNull(reader.GetOrdinal("OrderId")))
+                            {
+                                Product aProduct = new Product()
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("ProductId")),
+                                    Price = reader.GetDecimal(reader.GetOrdinal("Price")),
+                                    Title = reader.GetString(reader.GetOrdinal("Title")),
+                                    Description = reader.GetString(reader.GetOrdinal("Description")),
+                                    Quantity = reader.GetInt32(reader.GetOrdinal("Quantity")),
+                                };
+                                fromDictionary.Products.Add(aProduct);
+                            }
                         }
 
-
                         reader.Close();
-
-                        return Ok(orders);
+                        return Ok(orders.Values);
                     }
                 }
             }
