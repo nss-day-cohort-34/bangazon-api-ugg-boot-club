@@ -37,7 +37,8 @@ namespace BangazonAPI.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = "SELECT Id, ProductTypeId, CustomerId, Price, Title, Description, Quantity FROM Product";
+                    cmd.CommandText = @"SELECT Id, ProductTypeId, CustomerId, Price, Title, Description, Quantity FROM Product
+                                        WHERE isDeleted IS NULL";
                     SqlDataReader reader = cmd.ExecuteReader();
                     List<Product> products = new List<Product>();
 
@@ -75,7 +76,7 @@ namespace BangazonAPI.Controllers
                         SELECT
                             Id, ProductTypeId, CustomerId, Price, Title, Description, Quantity
                         FROM Product
-                        WHERE Id = @id";
+                        WHERE Id = @id AND isDeleted IS NULL";
                     cmd.Parameters.Add(new SqlParameter("@id", Id));
                     SqlDataReader reader = cmd.ExecuteReader();
 
@@ -92,6 +93,7 @@ namespace BangazonAPI.Controllers
                             Title = reader.GetString(reader.GetOrdinal("Title")),
                             Description = reader.GetString(reader.GetOrdinal("Description")),
                             Quantity = reader.GetInt32(reader.GetOrdinal("Quantity")),
+                            
                         };
                     }
                     reader.Close();

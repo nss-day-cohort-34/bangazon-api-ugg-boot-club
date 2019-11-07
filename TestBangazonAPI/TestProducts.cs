@@ -119,7 +119,8 @@ namespace TestBangazonAPI
                     Price = 5.50M,
                     Title = "Popcorn",
                     Description = "Buttery",
-                    Quantity = newQuantity
+                    Quantity = newQuantity,
+                    isDeleted = "yes"
                 };
                 var modifiedProductAsJSON = JsonConvert.SerializeObject(modifiedProduct);
 
