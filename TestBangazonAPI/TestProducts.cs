@@ -37,6 +37,8 @@ namespace TestBangazonAPI
                 */
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.True(productList.Count > 0);
+               
+            
             }
         }
 
@@ -120,7 +122,7 @@ namespace TestBangazonAPI
                     Title = "Popcorn",
                     Description = "Buttery",
                     Quantity = newQuantity,
-                    isDeleted = "yes"
+                    
                 };
                 var modifiedProductAsJSON = JsonConvert.SerializeObject(modifiedProduct);
 
@@ -148,11 +150,11 @@ namespace TestBangazonAPI
             }
         }
 
-        //[Fact]
-        //public async Task Test_Delete_Exercise()
-        //{
-        //    using (var client = new APIClientProvider().Client)
-        //    {
+        [Fact]
+        public async Task Test_Delete_Product()
+        {
+            using (var client = new APIClientProvider().Client)
+            {
                 /*
                     ARRANGE
                 */
@@ -162,13 +164,13 @@ namespace TestBangazonAPI
                     ACT
                 */
 
-                //var response = await client.DeleteAsync("/api/exercise/5");
+                var response = await client.DeleteAsync("/api/products/5");
 
                 /*
                     ASSERT
                 */
-    //            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-    //        }
-    //    }
+                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            }
+        }
     }
 }
