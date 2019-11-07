@@ -6,7 +6,7 @@
 		--op.Id AS OP_Id, 
 		--p.CustomerId AS Product_CustomerId, 
 		p.Id AS ProductId, p.Price, p.Title, p.Description, p.Quantity,
-		o.Id AS OrderId, o.CustomerId AS Order_CustomerId, o.PaymentTypeId, o.Status,
+		o.Id AS OrderId, o.CustomerId, o.PaymentTypeId, o.Status,
 		c.FirstName, c.LastName, c.CreationDate, c.LastActiveDate
 FROM OrderProduct op 
 LEFT JOIN [Order] o ON o.Id = op.OrderId

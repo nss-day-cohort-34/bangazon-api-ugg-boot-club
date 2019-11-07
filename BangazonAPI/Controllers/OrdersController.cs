@@ -160,11 +160,11 @@ namespace BangazonAPI.Controllers
                     }
                     
                     // inclues customers && products on orders in response body
-                    else if (_include?.ToLower() == "customers&products" || _include?.ToLower() == "products&customers")
+                    else if (_include?.ToLower() == "customers_products" || _include?.ToLower() == "products_customers")
                     {
                         cmd.CommandText = @"SELECT 
 		                                        p.Id AS ProductId, p.Price, p.Title, p.Description, p.Quantity,
-		                                        o.Id AS OrderId, o.CustomerId AS Order_CustomerId, o.PaymentTypeId, o.Status,
+		                                        o.Id AS OrderId, o.CustomerId, o.PaymentTypeId, o.Status,
 		                                        c.FirstName, c.LastName, c.CreationDate, c.LastActiveDate
                                             FROM OrderProduct op 
                                             LEFT JOIN [Order] o ON o.Id = op.OrderId
@@ -204,6 +204,7 @@ namespace BangazonAPI.Controllers
                                 Product aProduct = new Product()
                                 {
                                     Id = reader.GetInt32(reader.GetOrdinal("ProductId")),
+                                    CustomerId = reader.GetInt32(reader.GetOrdinal("CustomerId")),
                                     Price = reader.GetDecimal(reader.GetOrdinal("Price")),
                                     Title = reader.GetString(reader.GetOrdinal("Title")),
                                     Description = reader.GetString(reader.GetOrdinal("Description")),
