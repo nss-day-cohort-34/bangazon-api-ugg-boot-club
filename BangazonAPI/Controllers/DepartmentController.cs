@@ -32,7 +32,7 @@ namespace BangazonAPI.Controllers
 
         // GET api/Department
         [HttpGet]
-        public async Task<IActionResult> Get(string _include)
+        public async Task<IActionResult> Get(string _include, string _filter, int _gt)
         {
             using (SqlConnection conn = Connection)
             {
@@ -86,7 +86,39 @@ namespace BangazonAPI.Controllers
 
                         return Ok(departments.Values);
                     }
-                    //else if filter budget
+                    else if(_filter?.ToLower() == "budget") {
+                        cmd.CommandText = @"SELECT Id, Name, Budget FROM Department
+                                            WHERE BUDGET > @amount";
+
+                        cmd.Parameters.Add(new SqlParameter("@amount", _gt));
+                        SqlDataReader reader = await cmd.ExecuteReaderAsync();
+
+                        Dictionary<int, Department> departments = new Dictionary<int, Department>();
+                        while (reader.Read())
+                        {
+                            int departmentId = reader.GetInt32(reader.GetOrdinal("Id"));
+                            if (!departments.ContainsKey(departmentId))
+                            {
+
+
+                                Department department = new Department
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                    Name = reader.GetString(reader.GetOrdinal("Name")),
+                                    Budget = reader.GetInt32(reader.GetOrdinal("Budget"))
+
+                                };
+
+                                departments.Add(departmentId, department);
+                            }
+                        }
+
+                        reader.Close();
+
+                        return Ok(departments.Values);
+
+                    }
+
                     else
                     {
                     cmd.CommandText = @"SELECT Id, Name, Budget FROM Department";
