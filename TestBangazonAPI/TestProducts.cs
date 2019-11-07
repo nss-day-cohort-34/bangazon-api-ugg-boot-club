@@ -37,6 +37,8 @@ namespace TestBangazonAPI
                 */
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.True(productList.Count > 0);
+               
+            
             }
         }
 
@@ -120,12 +122,12 @@ namespace TestBangazonAPI
                     Title = "Popcorn",
                     Description = "Buttery",
                     Quantity = newQuantity,
-                    isDeleted = "yes"
+                    
                 };
                 var modifiedProductAsJSON = JsonConvert.SerializeObject(modifiedProduct);
 
                 var response = await client.PutAsync(
-                    "/api/products/6",
+                    "/api/products/1",
                     new StringContent(modifiedProductAsJSON, Encoding.UTF8, "application/json")
                 );
                 string responseBody = await response.Content.ReadAsStringAsync();
@@ -137,7 +139,7 @@ namespace TestBangazonAPI
                     GET section
                     Verify that the PUT operation was successful
                 */
-                var getProduct = await client.GetAsync("/api/products/6");
+                var getProduct = await client.GetAsync("/api/products/1");
                 getProduct.EnsureSuccessStatusCode();
 
                 string getProductBody = await getProduct.Content.ReadAsStringAsync();
@@ -148,11 +150,11 @@ namespace TestBangazonAPI
             }
         }
 
-        //[Fact]
-        //public async Task Test_Delete_Exercise()
-        //{
-        //    using (var client = new APIClientProvider().Client)
-        //    {
+        [Fact]
+        public async Task Test_Delete_Product()
+        {
+            using (var client = new APIClientProvider().Client)
+            {
                 /*
                     ARRANGE
                 */
@@ -162,13 +164,13 @@ namespace TestBangazonAPI
                     ACT
                 */
 
-                //var response = await client.DeleteAsync("/api/exercise/5");
+                var response = await client.DeleteAsync("/api/products/2");
 
                 /*
                     ASSERT
                 */
-    //            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-    //        }
-    //    }
+                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            }
+        }
     }
 }

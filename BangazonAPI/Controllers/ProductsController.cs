@@ -37,8 +37,7 @@ namespace BangazonAPI.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT Id, ProductTypeId, CustomerId, Price, Title, Description, Quantity FROM Product
-                                        WHERE isDeleted IS NULL";
+                    cmd.CommandText = "SELECT Id, ProductTypeId, CustomerId, Price, Title, Description, Quantity FROM Product";
                     SqlDataReader reader = cmd.ExecuteReader();
                     List<Product> products = new List<Product>();
 
@@ -52,7 +51,8 @@ namespace BangazonAPI.Controllers
                             Price = reader.GetDecimal(reader.GetOrdinal("Price")),
                             Title = reader.GetString(reader.GetOrdinal("Title")),
                             Description = reader.GetString(reader.GetOrdinal("Description")),
-                            Quantity = reader.GetInt32(reader.GetOrdinal("Quantity"))
+                            Quantity = reader.GetInt32(reader.GetOrdinal("Quantity")),
+                           
                         };
 
                         products.Add(product);
@@ -76,7 +76,7 @@ namespace BangazonAPI.Controllers
                         SELECT
                             Id, ProductTypeId, CustomerId, Price, Title, Description, Quantity
                         FROM Product
-                        WHERE Id = @id AND isDeleted IS NULL";
+                        WHERE Id = @id";
                     cmd.Parameters.Add(new SqlParameter("@id", Id));
                     SqlDataReader reader = cmd.ExecuteReader();
 
@@ -93,6 +93,7 @@ namespace BangazonAPI.Controllers
                             Title = reader.GetString(reader.GetOrdinal("Title")),
                             Description = reader.GetString(reader.GetOrdinal("Description")),
                             Quantity = reader.GetInt32(reader.GetOrdinal("Quantity")),
+                       
                             
                         };
                     }
@@ -145,8 +146,7 @@ namespace BangazonAPI.Controllers
                                                 Price = @Price,
                                                 Title = @Title,
                                                 Description = @Description,
-                                                Quantity = @Quantity,
-                                                isDeleted = @isDeleted
+                                                Quantity = @Quantity
                                             WHERE Id = @id";
                         cmd.Parameters.Add(new SqlParameter("@ProductTypeId", product.ProductTypeId));
                         cmd.Parameters.Add(new SqlParameter("@CustomerId", product.CustomerId));
@@ -154,7 +154,6 @@ namespace BangazonAPI.Controllers
                         cmd.Parameters.Add(new SqlParameter("@Title", product.Title));
                         cmd.Parameters.Add(new SqlParameter("@Description", product.Description));
                         cmd.Parameters.Add(new SqlParameter("@Quantity", product.Quantity));
-                        cmd.Parameters.Add(new SqlParameter("@isDeleted", product.isDeleted));
                         cmd.Parameters.Add(new SqlParameter("@Id", id));
 
                         int rowsAffected = await cmd.ExecuteNonQueryAsync();
@@ -191,9 +190,17 @@ namespace BangazonAPI.Controllers
                     conn.Open();
                     using (SqlCommand cmd = conn.CreateCommand())
                     {
+<<<<<<< HEAD
                         cmd.CommandText = @"UPDATE Product FROM Product WHERE Id = @id";
                         cmd.Parameters.Add(new SqlParameter("@id", id));
 
+=======
+                        cmd.CommandText = @"DELETE FROM OrderProduct WHERE ProductId = @id
+                                            DELETE FROM Product WHERE id = @id";
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
+
+
+>>>>>>> master
                         int rowsAffected = cmd.ExecuteNonQuery();
                         if (rowsAffected > 0)
                         {
