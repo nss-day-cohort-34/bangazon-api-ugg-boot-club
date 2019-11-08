@@ -46,7 +46,7 @@ namespace BangazonAPI.Controllers
                             c.LastActiveDate, p.Id AS ProductId, p.ProductTypeId, p.Price, p.Title, p.Description, p.Quantity
                         FROM Customer c INNER JOIN Product p ON p.CustomerId = c.Id";
 
-                        if (q.Length > 0)
+                        if (q != null)
                         {
                             cmd.CommandText += @" WHERE 
 							c.FirstName LIKE '%' + @q + '%' OR
@@ -158,16 +158,16 @@ namespace BangazonAPI.Controllers
                             cmd.CommandText = @"SELECT Id, FirstName, LastName, CreationDate, LastActiveDate 
                                        FROM Customer";
 
-                        if (q != null)
-                        {
-                            cmd.CommandText += @" WHERE 
-							FirstName LIKE '%' + @q + '%' OR
-							LastName LIKE '%' + @q + '%' 
-						    ";
-                            cmd.Parameters.Add(new SqlParameter("@q", q));
-                        }
+                            if (q != null)
+                            {
+                                cmd.CommandText += @" WHERE 
+							    FirstName LIKE '%' + @q + '%' OR
+							    LastName LIKE '%' + @q + '%' 
+						        ";
+                                cmd.Parameters.Add(new SqlParameter("@q", q));
+                            }
 
-                        SqlDataReader reader = await cmd.ExecuteReaderAsync();
+                            SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
                             Dictionary<int, Customer> customers = new Dictionary<int, Customer>();
                             while (reader.Read())
