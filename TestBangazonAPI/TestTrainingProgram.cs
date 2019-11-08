@@ -142,5 +142,28 @@ namespace TestBangazonAPI
 
             }
         }
+
+        [Fact]
+        public async Task Test_Delete_TrainingProgram()
+        {
+            using (var client = new APIClientProvider().Client)
+            {
+                /*
+                    ARRANGE
+                */
+
+
+                /*
+                    ACT
+                */
+
+                var response = await client.DeleteAsync("/api/trainingProgram/2");
+
+                /*
+                    ASSERT
+                */
+                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            }
+        }
     }
 }
