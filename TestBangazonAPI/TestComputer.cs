@@ -53,7 +53,7 @@ namespace TestBangazonAPI
                 /*
                     ACT
                 */
-                var getOneComputer = await client.GetAsync("/api/computers/1" +
+                var getOneComputer = await client.GetAsync("/api/computer/1" +
                     "");
                 getOneComputer.EnsureSuccessStatusCode();
 
