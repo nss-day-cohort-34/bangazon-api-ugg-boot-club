@@ -164,7 +164,11 @@ namespace TestBangazonAPI
                     ACT
                 */
 
-                var response = await client.DeleteAsync("/api/products/2");
+<<<<<<< HEAD
+                var response = await client.DeleteAsync("/api/products/1");
+=======
+                var response = await client.DeleteAsync("/api/products/3");
+>>>>>>> master
 
                 /*
                     ASSERT
