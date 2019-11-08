@@ -167,7 +167,6 @@ namespace TestBangazonAPI
                 */
                 ProductType toys = new ProductType
                 {
-                    Id = -1,
                     Name = "Toys"
                 };
 
@@ -188,7 +187,7 @@ namespace TestBangazonAPI
                 var newToys = JsonConvert.DeserializeObject<ProductType>(responseBody);
                 
                 //Get object
-                var getFood = await client.GetAsync("/api/productType/-1" +
+                var getFood = await client.GetAsync($"/api/productType/{newToys.Id}" +
                     "");
                 getFood.EnsureSuccessStatusCode();
 
@@ -196,11 +195,11 @@ namespace TestBangazonAPI
                 ProductType newFood = JsonConvert.DeserializeObject<ProductType>(getFoodBody);
 
                 //Delete Object
-                var deleteFood = await client.DeleteAsync("/api/productType/-1" +
+                var deleteFood = await client.DeleteAsync($"/api/productType/{newToys.Id}" +
                     "");
                 getFood.EnsureSuccessStatusCode();
                 //Try to Get Object Again
-                var attemptGetFood = await client.GetAsync("/api/productType/-1" +
+                var attemptGetFood = await client.GetAsync($"/api/productType/{newToys.Id}" +
                     "");
                 attemptGetFood.EnsureSuccessStatusCode();
 
