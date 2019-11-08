@@ -39,22 +39,6 @@ namespace BangazonAPI.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    if (q != null)
-                    {
-                        cmd.CommandText += @" WHERE 
-							c.Id LIKE '%{@q}%' OR
-							c.FirstName LIKE '%{@q}%' OR
-							c.LastName LIKE '%{@q}%' OR
-						    c.CreationDate LIKE '%{@q}%' OR
-						    c.LastActiveDate LIKE '%{@q}%' OR
-							p.Id LIKE '%{@q}%' OR
-							p.ProductTypeId LIKE '%{@q}%' OR
-							p.Price LIKE '%{@q}%' OR
-							p.Title LIKE '%{@q}%' OR
-							p.Description LIKE '%{@q}%' OR
-							p.Quantity LIKE '%{@q}%'";
-                        cmd.Parameters.Add(new SqlParameter("@q", q));
-                    }
 
                     if (_include?.ToLower() == "products")
                         {
@@ -62,20 +46,12 @@ namespace BangazonAPI.Controllers
                             c.LastActiveDate, p.Id AS ProductId, p.ProductTypeId, p.Price, p.Title, p.Description, p.Quantity
                         FROM Customer c INNER JOIN Product p ON p.CustomerId = c.Id";
 
-                        if (q != null)
+                        if (q.Length > 0)
                         {
                             cmd.CommandText += @" WHERE 
-							c.Id LIKE '%{@q}%' OR
-							c.FirstName LIKE '%{@q}%' OR
-							c.LastName LIKE '%{@q}%' OR
-						    c.CreationDate LIKE '%{@q}%' OR
-						    c.LastActiveDate LIKE '%{@q}%' OR
-							p.Id LIKE '%{@q}%' OR
-							p.ProductTypeId LIKE '%{@q}%' OR
-							p.Price LIKE '%{@q}%' OR
-							p.Title LIKE '%{@q}%' OR
-							p.Description LIKE '%{@q}%' OR
-							p.Quantity LIKE '%{@q}%'";
+							c.FirstName LIKE '%' + @q + '%' OR
+							c.LastName LIKE '%' + @q + '%' 
+						    ";
                             cmd.Parameters.Add(new SqlParameter("@q", q));
                         }
 
@@ -132,17 +108,9 @@ namespace BangazonAPI.Controllers
                         if (q != null)
                         {
                             cmd.CommandText += @" WHERE 
-							c.Id LIKE '%{@q}%' OR
-							c.FirstName LIKE '%{@q}%' OR
-							c.LastName LIKE '%{@q}%' OR
-						    c.CreationDate LIKE '%{@q}%' OR
-						    c.LastActiveDate LIKE '%{@q}%' OR
-							p.Id LIKE '%{@q}%' OR
-							p.ProductTypeId LIKE '%{@q}%' OR
-							p.Price LIKE '%{@q}%' OR
-							p.Title LIKE '%{@q}%' OR
-							p.Description LIKE '%{@q}%' OR
-							p.Quantity LIKE '%{@q}%'";
+							c.FirstName LIKE '%' + @q + '%' OR
+							c.LastName LIKE '%' + @q + '%'
+						    ";
                             cmd.Parameters.Add(new SqlParameter("@q", q));
                         }
 
@@ -193,11 +161,9 @@ namespace BangazonAPI.Controllers
                         if (q != null)
                         {
                             cmd.CommandText += @" WHERE 
-							Id LIKE '%{@q}%' OR
-							FirstName LIKE '%{@q}%' OR
-							LastName LIKE '%{@q}%' OR
-						    CreationDate LIKE '%{@q}%' OR
-						    LastActiveDate LIKE '%{@q}%'";
+							FirstName LIKE '%' + @q + '%' OR
+							LastName LIKE '%' + @q + '%' 
+						    ";
                             cmd.Parameters.Add(new SqlParameter("@q", q));
                         }
 
@@ -336,13 +302,6 @@ namespace BangazonAPI.Controllers
                 }
             }
         }
-
-        // DELETE api/customers/5
-        [HttpDelete("{id}")]
-        //public async Task<IActionResult> Delete(int id)
-        //{
-        //    throw new NotImplementedException("This method isn't implemented...yet.");
-        //}
 
         private bool CustomerExists(int id)
         {
