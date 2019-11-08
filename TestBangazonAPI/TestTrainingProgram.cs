@@ -146,23 +146,59 @@ namespace TestBangazonAPI
         [Fact]
         public async Task Test_Delete_TrainingProgram()
         {
+
             using (var client = new APIClientProvider().Client)
             {
                 /*
                     ARRANGE
                 */
+                TrainingProgram trainingProgramToDelete = new TrainingProgram
+                {
+                    Name = "Test Training Program",
+                    StartDate = DateTime.Now,
+                    EndDate = DateTime.Today.AddDays(1),
+                    MaxAttendees = 2
 
+                };
+
+                // Serialize the C# object into a JSON string
+                var trainingProgramAsJSON = JsonConvert.SerializeObject(trainingProgramToDelete);
 
                 /*
                     ACT
                 */
+                //Insert object
+                var response = await client.PostAsync(
+                    "/api/trainingprogram",
+                    new StringContent(trainingProgramAsJSON, Encoding.UTF8, "application/json")
+                );
+                string responseBody = await response.Content.ReadAsStringAsync();
 
-                var response = await client.DeleteAsync("/api/trainingProgram/2");
+                var newTrainingProgram = JsonConvert.DeserializeObject<TrainingProgram>(responseBody);
+
+                //Get object
+                var getTrainingProgramToDelete = await client.GetAsync($"/api/trainingprogram/{newTrainingProgram.Id}");
+                getTrainingProgramToDelete.EnsureSuccessStatusCode();
+
+                string getTrainingProgramToDeleteBody = await getTrainingProgramToDelete.Content.ReadAsStringAsync();
+                TrainingProgram newTrainingProgramFromResponse = JsonConvert.DeserializeObject<TrainingProgram>(getTrainingProgramToDeleteBody);
+
+                //Delete Object
+                var deleteTrainingProgram = await client.DeleteAsync($"/api/trainingprogram/{newTrainingProgram.Id}");
+                deleteTrainingProgram.EnsureSuccessStatusCode();
+                //Try to Get Object Again
+                var attemptGetTrainingProgram = await client.GetAsync($"/api/trainingprogram/{newTrainingProgram.Id}");
+                attemptGetTrainingProgram.EnsureSuccessStatusCode();
+
+                string attemptGetTrainingProgramBody = await getTrainingProgramToDelete.Content.ReadAsStringAsync();
+                TrainingProgram newAttemptToGetTrainingProgram = JsonConvert.DeserializeObject<TrainingProgram>(attemptGetTrainingProgramBody);
+
 
                 /*
                     ASSERT
                 */
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+                Assert.Equal(HttpStatusCode.NoContent, attemptGetTrainingProgram.StatusCode);
+
             }
         }
     }

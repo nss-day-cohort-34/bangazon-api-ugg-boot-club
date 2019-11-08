@@ -91,13 +91,13 @@ namespace BangazonAPI.Controllers
                             }
                             else
                             {
-                                TrainingProgram existingTrainingProgram = trainingPrograms.Find(t => t.Id == trainingProgram.Id);
+                                TrainingProgram existingTrainingProgram = trainingPrograms.Find(trainingProgram => trainingProgram.Id == trainingProgram.Id);
                                 existingTrainingProgram.EmployeeList.Add(employee);
                             }
                         }
                         else
                         {
-                            if (!trainingPrograms.Exists(t => t.Id == trainingProgram.Id))
+                            if (!trainingPrograms.Exists(trainingProgram => trainingProgram.Id == trainingProgram.Id))
                             {
                                 trainingPrograms.Add(trainingProgram);
                             }
